@@ -1,6 +1,6 @@
 import 'package:flame/game.dart';
 import 'package:flutter/widgets.dart';
-import 'package:nexus_survivor/game/nexus_survivor.dart';
+import 'package:nexus_survivor/game/dev_nexus_survivor.dart';
 
 /// [GamePage] is the top-level widget that hosts the Flame game.
 class GamePage extends StatelessWidget {
@@ -10,6 +10,6 @@ class GamePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Directionality(
     textDirection: TextDirection.ltr,
-    child: GameWidget(game: NexusSurvivor()),
+    child: GameWidget(game: DevNexusSurvivor()),
   );
 }
