@@ -1,6 +1,7 @@
 import 'package:flame/components.dart';
 import 'package:flutter/services.dart';
 import 'package:nexus_survivor/game/character/base/base_character_component.dart';
+import 'package:nexus_survivor/game/controller/movement_joystick.dart';
 import 'package:nexus_survivor/game/nexus_survivor.dart';
 import 'package:nexus_survivor/game/skill/skill_manager.dart';
 
@@ -22,14 +23,22 @@ class PlayerController extends Component
   /// Creates a [PlayerController] bound to the given [character].
   ///
   /// When [skillManager] is provided, skill activation keys (Q/E/R)
-  /// are enabled.
-  PlayerController({required this.character, this.skillManager});
+  /// are enabled. When [movementJoystick] is provided, touch-based
+  /// movement via the virtual joystick is enabled.
+  PlayerController({
+    required this.character,
+    this.skillManager,
+    this.movementJoystick,
+  });
 
   /// The character this controller drives.
   final BaseCharacterComponent character;
 
   /// Optional skill manager for skill activation via Q/E/R.
   final SkillManager? skillManager;
+
+  /// Optional virtual joystick for touch-based movement.
+  final MovementJoystick? movementJoystick;
 
   //#region Private fields
 
@@ -115,7 +124,10 @@ class PlayerController extends Component
   //#region Private helpers
 
   /// Builds a combined movement vector from currently held WASD keys
-  /// and applies it to the character.
+  /// or the virtual joystick and applies it to the character.
+  ///
+  /// Keyboard input takes priority when active. When no WASD keys are
+  /// pressed the joystick direction is used instead.
   void _updateMovement(double dt) {
     final direction = Vector2.zero();
 
@@ -123,6 +135,11 @@ class PlayerController extends Component
       if (_pressedKeys.contains(entry.key)) {
         direction.add(entry.value);
       }
+    }
+
+    // Fall back to joystick input when no keyboard movement is active.
+    if (direction.isZero() && movementJoystick != null) {
+      direction.setFrom(movementJoystick!.movementDirection);
     }
 
     // Normalize diagonal movement so speed is consistent.
