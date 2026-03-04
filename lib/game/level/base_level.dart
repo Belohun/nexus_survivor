@@ -1,6 +1,6 @@
 import 'package:flame/components.dart';
-import 'package:nexus_survivor/game/world/level_config.dart';
-import 'package:nexus_survivor/game/world/level_state.dart';
+import 'package:nexus_survivor/game/level/level_config.dart';
+import 'package:nexus_survivor/game/level/level_state.dart';
 import 'package:nexus_survivor/game/world/wave_config.dart';
 
 /// [BaseLevel] is the abstract foundation for every playable level.

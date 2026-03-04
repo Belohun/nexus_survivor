@@ -1,6 +1,7 @@
 import 'package:flame/components.dart';
 import 'package:flutter/services.dart';
 import 'package:nexus_survivor/game/character/base/base_character_component.dart';
+import 'package:nexus_survivor/game/controller/action_joystick.dart';
 import 'package:nexus_survivor/game/controller/movement_joystick.dart';
 import 'package:nexus_survivor/game/nexus_survivor.dart';
 import 'package:nexus_survivor/game/skill/skill_manager.dart';
@@ -24,11 +25,14 @@ class PlayerController extends Component
   ///
   /// When [skillManager] is provided, skill activation keys (Q/E/R)
   /// are enabled. When [movementJoystick] is provided, touch-based
-  /// movement via the virtual joystick is enabled.
+  /// movement via the virtual joystick is enabled. When
+  /// [actionJoystick] is provided, touch-based aiming and
+  /// release-to-fire are enabled.
   PlayerController({
     required this.character,
     this.skillManager,
     this.movementJoystick,
+    this.actionJoystick,
   });
 
   /// The character this controller drives.
@@ -40,6 +44,9 @@ class PlayerController extends Component
   /// Optional virtual joystick for touch-based movement.
   final MovementJoystick? movementJoystick;
 
+  /// Optional virtual joystick for touch-based aiming and attacking.
+  final ActionJoystick? actionJoystick;
+
   //#region Private fields
 
   // Movement keys currently held.
@@ -50,6 +57,10 @@ class PlayerController extends Component
 
   // Whether arrow keys are actively providing aim input.
   bool _arrowAiming = false;
+
+  // The last valid aim direction from the action joystick, used to
+  // fire on release.
+  final Vector2 _lastActionAimDirection = Vector2(0, 1);
 
   /// Maps WASD keys to their movement contribution vectors.
   static final Map<LogicalKeyboardKey, Vector2> _moveKeyMap = {
@@ -115,8 +126,12 @@ class PlayerController extends Component
   void update(double dt) {
     super.update(dt);
 
-    _updateAimDirection();
     _updateMovement(dt);
+    _updateAimDirection();
+    _handleActionJoystick();
+
+    // Sync the character's aim direction so the weapon follows.
+    character.aimDirection.setFrom(_aimDirection);
   }
 
   //#endregion
@@ -150,22 +165,48 @@ class PlayerController extends Component
     character.move(direction, dt);
   }
 
-  /// Updates the aim direction from arrow keys. When no arrow key is
-  /// pressed the last direction is retained so the player always has
-  /// a valid aim.
+  /// Updates the aim direction from arrow keys or the action joystick.
+  ///
+  /// Priority: arrow keys > action joystick > retain last direction.
   void _updateAimDirection() {
     final aim = Vector2.zero();
     _arrowAiming = false;
 
-    for (final entry in _aimKeyMap.entries) {
-      if (_pressedKeys.contains(entry.key)) {
-        aim.add(entry.value);
+    for (final pressedKey in _pressedKeys) {
+      final key = _aimKeyMap[pressedKey];
+
+      if (key != null) {
+        aim.add(key);
         _arrowAiming = true;
       }
     }
 
     if (_arrowAiming && !aim.isZero()) {
       _aimDirection.setFrom(aim.normalized());
+      return;
+    }
+
+    // Fall back to action joystick aim when no arrow keys are active.
+    if (actionJoystick != null && actionJoystick!.isAiming) {
+      final joystickAim = actionJoystick!.aimDirection;
+      if (!joystickAim.isZero()) {
+        _aimDirection.setFrom(joystickAim.normalized());
+        _lastActionAimDirection.setFrom(_aimDirection);
+      }
+    }
+  }
+
+  /// Checks the action joystick for a release event and fires the
+  /// weapon / performs an attack when detected.
+  void _handleActionJoystick() {
+    if (actionJoystick == null) return;
+
+    // Update the weapon's aiming state.
+    character.weapon?.isAiming = actionJoystick!.isAiming;
+
+    if (actionJoystick!.justReleased) {
+      _performAttack();
+      character.weapon?.onFire();
     }
   }
 

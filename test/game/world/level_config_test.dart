@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nexus_survivor/game/world/level_config.dart';
+import 'package:nexus_survivor/game/level/level.dart';
 import 'package:nexus_survivor/game/world/wave_config.dart';
 
 void main() {

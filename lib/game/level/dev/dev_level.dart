@@ -1,5 +1,5 @@
-import 'package:nexus_survivor/game/world/base_level.dart';
-import 'package:nexus_survivor/game/world/level_config.dart';
+import 'package:nexus_survivor/game/level/base_level.dart';
+import 'package:nexus_survivor/game/level/level_config.dart';
 import 'package:nexus_survivor/game/world/wave_config.dart';
 
 /// [DevLevel] is a concrete [BaseLevel] used during development.

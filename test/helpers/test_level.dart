@@ -1,5 +1,4 @@
-import 'package:nexus_survivor/game/world/base_level.dart';
-import 'package:nexus_survivor/game/world/level_config.dart';
+import 'package:nexus_survivor/game/level/level.dart';
 import 'package:nexus_survivor/game/world/wave_config.dart';
 
 /// A minimal concrete [BaseLevel] used in tests.
