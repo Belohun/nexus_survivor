@@ -8,7 +8,7 @@ import '../../helpers/game_helpers.dart';
 
 /// A minimal concrete [BaseWeapon] for testing within a character.
 class _TestWeapon extends BaseWeapon {
-  _TestWeapon();
+  _TestWeapon({super.orbitRadius});
 
   int fireCount = 0;
 
@@ -116,5 +116,85 @@ void main() {
         },
       );
     });
+
+    test('moving character does not change weapon aimAngle', () async {
+      await withMountedCharacter(
+        testBody: (game, character) async {
+          final weapon = _TestWeapon();
+          character.weapon = weapon;
+          game.update(0);
+          await game.ready();
+
+          // Aim to the right and pump a frame to sync.
+          character.aimDirection.setFrom(Vector2(1, 0));
+          game.update(0.016);
+
+          final angleBeforeMove = weapon.aimAngle;
+          final posBeforeMove = weapon.position.clone();
+
+          // Move left — this used to flip the character and mirror the
+          // weapon's local coordinate space.
+          character.move(Vector2(-1, 0), 0.016);
+          game.update(0.016);
+
+          expect(weapon.aimAngle, closeTo(angleBeforeMove, 0.001));
+          expect(weapon.position.x, closeTo(posBeforeMove.x, 0.001));
+          expect(weapon.position.y, closeTo(posBeforeMove.y, 0.001));
+
+          // Move right — should also keep the weapon unchanged.
+          character.move(Vector2(1, 0), 0.016);
+          game.update(0.016);
+
+          expect(weapon.aimAngle, closeTo(angleBeforeMove, 0.001));
+          expect(weapon.position.x, closeTo(posBeforeMove.x, 0.001));
+          expect(weapon.position.y, closeTo(posBeforeMove.y, 0.001));
+        },
+      );
+    });
+
+    test(
+      'weapon stays on correct side after repeated direction changes',
+      () async {
+        await withMountedCharacter(
+          testBody: (game, character) async {
+            final weapon = _TestWeapon(orbitRadius: 30);
+            character.weapon = weapon;
+            game.update(0);
+            await game.ready();
+
+            // Aim to the right.
+            character.aimDirection.setFrom(Vector2(1, 0));
+            game.update(0.016);
+
+            final expectedAngle = weapon.aimAngle;
+            final expectedPos = weapon.position.clone();
+
+            // Rapidly alternate movement direction to simulate the
+            // scenario that previously caused a one-frame glitch.
+            for (var i = 0; i < 10; i++) {
+              final dir = i.isEven ? Vector2(-1, 0) : Vector2(1, 0);
+              character.move(dir, 0.016);
+              game.update(0.016);
+
+              expect(
+                weapon.aimAngle,
+                closeTo(expectedAngle, 0.001),
+                reason: 'aimAngle drifted on iteration $i',
+              );
+              expect(
+                weapon.position.x,
+                closeTo(expectedPos.x, 0.001),
+                reason: 'position.x drifted on iteration $i',
+              );
+              expect(
+                weapon.position.y,
+                closeTo(expectedPos.y, 0.001),
+                reason: 'position.y drifted on iteration $i',
+              );
+            }
+          },
+        );
+      },
+    );
   });
 }
