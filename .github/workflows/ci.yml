@@ -18,29 +18,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Read Flutter version from pubspec.yaml
+        id: flutter_version
+        run: |
+          VERSION=$(grep -E '^  flutter: ' pubspec.yaml | awk '{print $2}')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: stable
-
-      - name: Install fvm
-        run: dart pub global activate fvm
-
-      - name: Add pub global bin to PATH
-        run: echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
-
-      - name: Install Flutter via fvm
-        run: fvm install
+          flutter-version: ${{ steps.flutter_version.outputs.version }}
 
       - name: Get dependencies
-        run: fvm flutter pub get
+        run: flutter pub get
 
       - name: Verify formatting
-        run: fvm dart format --output=none --set-exit-if-changed .
+        run: dart format --output=none --set-exit-if-changed .
 
       - name: Analyze
-        run: fvm flutter analyze --fatal-infos
+        run: flutter analyze --fatal-infos
 
       - name: Run tests
-        run: fvm flutter test --coverage
-
+        run: flutter test --coverage
