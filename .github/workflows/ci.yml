@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - '**'
+
+concurrency:
+  group: ci-${{ github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: Analyze, Format & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install fvm
+        run: dart pub global activate fvm
+
+      - name: Install Flutter via fvm
+        run: fvm install
+
+      - name: Get dependencies
+        run: fvm flutter pub get
+
+      - name: Verify formatting
+        run: fvm dart format --output=none --set-exit-if-changed .
+
+      - name: Analyze
+        run: fvm flutter analyze --fatal-infos
+
+      - name: Run tests
+        run: fvm flutter test --coverage
+
