@@ -1,6 +1,6 @@
 import 'package:flame/components.dart';
 import 'package:nexus_survivor/game/nexus_survivor.dart';
-import 'package:nexus_survivor/game/world/base_level.dart';
+import 'package:nexus_survivor/game/level/base_level.dart';
 
 /// [GameWorld] is the root Flame [World] that contains all gameplay
 /// entities.

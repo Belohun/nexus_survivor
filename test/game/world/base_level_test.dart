@@ -1,8 +1,7 @@
 import 'package:flame_test/flame_test.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nexus_survivor/game/level/level.dart';
 import 'package:nexus_survivor/game/nexus_survivor.dart';
-import 'package:nexus_survivor/game/world/level_config.dart';
-import 'package:nexus_survivor/game/world/level_state.dart';
 import 'package:nexus_survivor/game/world/wave_config.dart';
 
 import '../../helpers/test_level.dart';

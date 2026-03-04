@@ -1,10 +1,12 @@
 import 'dart:math';
+import 'dart:ui';
 
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:nexus_survivor/game/character/base/character_state.dart';
 import 'package:nexus_survivor/game/character/base/character_stats.dart';
 import 'package:nexus_survivor/game/nexus_survivor.dart';
+import 'package:nexus_survivor/game/weapon/base_weapon.dart';
 
 /// [BaseCharacterComponent] is the abstract foundation for every character
 /// (player **and** enemies) in the game.
@@ -57,6 +59,13 @@ abstract class BaseCharacterComponent extends SpriteAnimationComponent
 
   CharacterState _currentState = CharacterState.idle;
 
+  /// Whether the sprite should be rendered mirrored horizontally.
+  ///
+  /// Set by [move] when the character faces left. Only affects the
+  /// sprite rendering — child components (e.g. weapons) are not
+  /// transformed.
+  bool _facingLeft = false;
+
   //#endregion
 
   //#region Public state
@@ -70,10 +79,39 @@ abstract class BaseCharacterComponent extends SpriteAnimationComponent
   /// The direction the character is currently facing.
   Direction facingDirection = Direction.down;
 
+  /// Whether the character's sprite is rendered facing left.
+  ///
+  /// Only the sprite rendering is mirrored — child components such as
+  /// weapons are **not** affected by this flag.
+  bool get isFacingLeft => _facingLeft;
+
   /// Current velocity in pixels per second.
   ///
   /// Updated by [move], [dash], and [applyKnockback].
   final Vector2 velocity = Vector2.zero();
+
+  /// The world-space direction the character is currently aiming.
+  ///
+  /// Defaults to facing down. Updated by [PlayerController] or AI
+  /// systems. The attached [weapon] reads this to orient itself.
+  final Vector2 aimDirection = Vector2(0, 1);
+
+  BaseWeapon? _weapon;
+
+  /// The weapon currently attached to this character, or `null`.
+  ///
+  /// Setting a new weapon removes the previous one from the component
+  /// tree and adds the new one as a child.
+  BaseWeapon? get weapon => _weapon;
+  set weapon(BaseWeapon? value) {
+    if (_weapon != null) {
+      _weapon!.removeFromParent();
+    }
+    _weapon = value;
+    if (_weapon != null && isMounted) {
+      add(_weapon!);
+    }
+  }
 
   //#endregion
 
@@ -142,6 +180,11 @@ abstract class BaseCharacterComponent extends SpriteAnimationComponent
 
     anchor = Anchor.center;
     _syncAnimation();
+
+    // Mount the weapon if one was assigned before loading.
+    if (_weapon != null) {
+      await add(_weapon!);
+    }
   }
 
   @override
@@ -153,6 +196,22 @@ abstract class BaseCharacterComponent extends SpriteAnimationComponent
     _applyVelocity(dt);
     _handleAutoStateTransitions();
     _syncAnimation();
+
+    // Keep the weapon oriented toward the current aim direction.
+    _weapon?.setAimDirection(aimDirection);
+  }
+
+  @override
+  void render(Canvas canvas) {
+    if (_facingLeft) {
+      canvas.save();
+      canvas.translate(size.x, 0);
+      canvas.scale(-1, 1);
+      super.render(canvas);
+      canvas.restore();
+    } else {
+      super.render(canvas);
+    }
   }
 
   //#endregion
@@ -176,11 +235,11 @@ abstract class BaseCharacterComponent extends SpriteAnimationComponent
     velocity.setFrom(normalized * stats.speed);
     facingDirection = Direction.fromVector(normalized.x, normalized.y);
 
-    // Flip sprite horizontally based on facing direction.
+    // Track facing for sprite-only flipping (does not affect children).
     if (facingDirection.isLeft) {
-      if (!isFlippedHorizontally) flipHorizontally();
+      _facingLeft = true;
     } else if (facingDirection.isRight) {
-      if (isFlippedHorizontally) flipHorizontally();
+      _facingLeft = false;
     }
 
     _tryTransition(CharacterState.moving);

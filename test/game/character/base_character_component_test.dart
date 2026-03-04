@@ -614,7 +614,7 @@ void main() {
         testBody: (game, character) async {
           character.move(Vector2(-1, 0), 0.016);
           expect(character.facingDirection, Direction.left);
-          expect(character.isFlippedHorizontally, isTrue);
+          expect(character.isFacingLeft, isTrue);
         },
       );
     });
@@ -623,10 +623,10 @@ void main() {
       await withMountedCharacter(
         testBody: (game, character) async {
           character.move(Vector2(-1, 0), 0.016);
-          expect(character.isFlippedHorizontally, isTrue);
+          expect(character.isFacingLeft, isTrue);
 
           character.move(Vector2(1, 0), 0.016);
-          expect(character.isFlippedHorizontally, isFalse);
+          expect(character.isFacingLeft, isFalse);
         },
       );
     });
