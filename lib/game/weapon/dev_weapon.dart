@@ -1,13 +1,16 @@
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:flame/components.dart';
 import 'package:nexus_survivor/game/weapon/base_weapon.dart';
+import 'package:nexus_survivor/game/weapon/effect/dev_bullet.dart';
 
 /// [DevWeapon] is a concrete [BaseWeapon] used during development.
 ///
 /// It renders as a small coloured rectangle (no sprite assets required)
-/// and performs no real attack logic — [onFire] is a no-op. Attach it
-/// to a [DevCharacter] to visualise the aim direction on screen.
+/// and fires a [DevBullet] in the current aim direction when [onFire]
+/// is called. Attach it to a [DevCharacter] to visualise the aim
+/// direction on screen.
 class DevWeapon extends BaseWeapon {
   /// Creates a [DevWeapon] with an optional custom [orbitRadius].
   DevWeapon({super.orbitRadius = 24});
@@ -16,7 +19,12 @@ class DevWeapon extends BaseWeapon {
 
   @override
   void onFire() {
-    // No-op in the dev implementation.
+    final direction = Vector2(cos(aimAngle), sin(aimAngle));
+    final bullet = DevBullet(
+      spawnPosition: worldPosition,
+      direction: direction,
+    );
+    spawnEffect(bullet);
   }
 
   //#endregion

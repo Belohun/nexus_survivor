@@ -204,7 +204,7 @@ class PlayerController extends Component
     // Update the weapon's aiming state.
     character.weapon?.isAiming = actionJoystick!.isAiming;
 
-    if (actionJoystick!.justReleased) {
+    if (actionJoystick!.isDragged) {
       _performAttack();
       character.weapon?.onFire();
     }
