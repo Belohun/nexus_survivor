@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flame/components.dart';
+import 'package:nexus_survivor/game/weapon/effect/base_weapon_effect.dart';
 
 /// [BaseWeapon] is the abstract foundation for every weapon that can be
 /// attached to a character.
@@ -49,6 +50,27 @@ abstract class BaseWeapon extends PositionComponent {
   ///
   /// Subclasses implement this to perform the actual attack.
   void onFire();
+
+  /// Spawns a [BaseWeaponEffect] into the game world.
+  ///
+  /// The effect is added as a child of the weapon's top-level ancestor
+  /// (typically the [World]) so it lives independently of the weapon
+  /// and character hierarchy. Does nothing when the weapon is not
+  /// mounted.
+  void spawnEffect(BaseWeaponEffect effect) {
+    final world = findGame()?.world;
+    if (world is Component) {
+      (world as Component).add(effect);
+    }
+  }
+
+  /// Returns the world-space position of this weapon's tip.
+  ///
+  /// Useful for subclasses to determine where to spawn projectiles or
+  /// other effects.
+  Vector2 get worldPosition {
+    return absolutePosition;
+  }
 
   //#endregion
 
