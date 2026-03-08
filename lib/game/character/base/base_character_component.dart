@@ -103,6 +103,7 @@ abstract class BaseCharacterComponent extends SpriteAnimationComponent
   /// Setting a new weapon removes the previous one from the component
   /// tree and adds the new one as a child.
   BaseWeapon? get weapon => _weapon;
+
   set weapon(BaseWeapon? value) {
     if (_weapon != null) {
       _weapon!.removeFromParent();
@@ -181,6 +182,9 @@ abstract class BaseCharacterComponent extends SpriteAnimationComponent
     anchor = Anchor.center;
     _syncAnimation();
 
+    // Add a hitbox so the collision system can detect overlaps.
+    await add(RectangleHitbox());
+
     // Mount the weapon if one was assigned before loading.
     if (_weapon != null) {
       await add(_weapon!);
@@ -211,6 +215,53 @@ abstract class BaseCharacterComponent extends SpriteAnimationComponent
       canvas.restore();
     } else {
       super.render(canvas);
+    }
+  }
+
+  //#endregion
+
+  //#region Collision resolution
+
+  /// The position recorded before the last velocity application.
+  ///
+  /// Used by [onCollision] to revert movement into static obstacles
+  /// such as the nexus.
+  final Vector2 _previousPosition = Vector2.zero();
+
+  @override
+  void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
+    super.onCollision(intersectionPoints, other);
+
+    _blockMovementIntoObstacle(other);
+  }
+
+  /// Reverts the character's position to [_previousPosition] on axes
+  /// that cause overlap with [obstacle], so the character cannot walk
+  /// on top of it.
+  void _blockMovementIntoObstacle(PositionComponent obstacle) {
+    final obstacleRect = obstacle.toRect();
+
+    // Try keeping the new X but reverting Y.
+    final tryRevertY = toRect().shift(
+      Offset(0, _previousPosition.y - position.y),
+    );
+    // Try keeping the new Y but reverting X.
+    final tryRevertX = toRect().shift(
+      Offset(_previousPosition.x - position.x, 0),
+    );
+
+    final overlapsWithRevertedY = obstacleRect.overlaps(tryRevertY);
+    final overlapsWithRevertedX = obstacleRect.overlaps(tryRevertX);
+
+    if (!overlapsWithRevertedY) {
+      // Reverting Y alone resolves it — allow horizontal sliding.
+      position.y = _previousPosition.y;
+    } else if (!overlapsWithRevertedX) {
+      // Reverting X alone resolves it — allow vertical sliding.
+      position.x = _previousPosition.x;
+    } else {
+      // Both axes contribute — revert fully.
+      position.setFrom(_previousPosition);
     }
   }
 
@@ -520,6 +571,7 @@ abstract class BaseCharacterComponent extends SpriteAnimationComponent
   }
 
   void _applyVelocity(double dt) {
+    _previousPosition.setFrom(position);
     position.add(velocity * dt);
 
     // Decay velocity when not actively moving or dashing.

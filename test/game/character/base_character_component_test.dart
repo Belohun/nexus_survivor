@@ -3,9 +3,11 @@ import 'package:flame_test/flame_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nexus_survivor/game/character/base/character_state.dart';
 import 'package:nexus_survivor/game/character/base/character_stats.dart';
+import 'package:nexus_survivor/game/nexus_survivor.dart';
 
 import '../../helpers/game_helpers.dart';
 import '../../helpers/test_character.dart';
+import '../../helpers/test_nexus.dart';
 
 void main() {
   group('BaseCharacterComponent', () {
@@ -632,9 +634,116 @@ void main() {
     });
 
     //#endregion
+
+    //#region Collision resolution
+
+    group('collision with nexus', () {
+      test('character cannot walk on top of the nexus', () async {
+        final game = await initializeGame(NexusSurvivor.new);
+
+        // Place a 64×64 nexus at the origin.
+        final nexus = TestNexus(
+          testStats: defaultTestNexusStats(maxHp: 100),
+          testSize: Vector2.all(64),
+          testPosition: Vector2.zero(),
+        );
+        await game.ensureAdd(nexus);
+
+        // Place the character to the right of the nexus.
+        final character = TestCharacter(
+          testStats: defaultTestStats(speed: 200),
+        );
+        await character.init();
+        character.position = Vector2(80, 32);
+        await game.ensureAdd(character);
+
+        // Move the character to the left, toward the nexus.
+        for (var i = 0; i < 30; i++) {
+          character.move(Vector2(-1, 0), 0.016);
+          game.update(0.016);
+        }
+
+        // The character should not be inside the nexus.
+        final charRect = character.toRect();
+        final nexusRect = nexus.toRect();
+        expect(
+          charRect.overlaps(nexusRect),
+          isFalse,
+          reason: 'Character should be blocked by the nexus, not inside it',
+        );
+
+        game.onRemove();
+      });
+
+      test('character can slide along the nexus edge', () async {
+        final game = await initializeGame(NexusSurvivor.new);
+
+        // Place a 64×64 nexus at the origin.
+        final nexus = TestNexus(
+          testStats: defaultTestNexusStats(maxHp: 100),
+          testSize: Vector2.all(64),
+          testPosition: Vector2.zero(),
+        );
+        await game.ensureAdd(nexus);
+
+        // Place the character just to the right of the nexus.
+        final character = TestCharacter(
+          testStats: defaultTestStats(speed: 200),
+        );
+        await character.init();
+        character.position = Vector2(80, 32);
+        await game.ensureAdd(character);
+
+        final startY = character.position.y;
+
+        // Move diagonally (left + down) into the nexus edge.
+        // The character should slide along the Y axis.
+        for (var i = 0; i < 20; i++) {
+          character.move(Vector2(-1, 1).normalized(), 0.016);
+          game.update(0.016);
+        }
+
+        // Y should have changed (sliding along the edge).
+        expect(
+          character.position.y,
+          greaterThan(startY),
+          reason: 'Character should slide vertically along the nexus edge',
+        );
+
+        game.onRemove();
+      });
+
+      test('character far from nexus is not affected', () async {
+        final game = await initializeGame(NexusSurvivor.new);
+
+        final nexus = TestNexus(
+          testStats: defaultTestNexusStats(maxHp: 100),
+          testSize: Vector2.all(64),
+          testPosition: Vector2.zero(),
+        );
+        await game.ensureAdd(nexus);
+
+        final character = TestCharacter(
+          testStats: defaultTestStats(speed: 200),
+        );
+        await character.init();
+        character.position = Vector2(500, 500);
+        await game.ensureAdd(character);
+
+        game.update(0.016);
+
+        // Should remain at the same position.
+        expect(character.position.x, closeTo(500, 0.1));
+        expect(character.position.y, closeTo(500, 0.1));
+
+        game.onRemove();
+      });
+    });
+
+    //#endregion
   });
 
-  //#region Direction helper
+  //#region CharacterStats
 
   group('Direction', () {
     test('fromVector returns correct cardinal directions', () {

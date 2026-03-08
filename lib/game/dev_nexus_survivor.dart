@@ -1,8 +1,9 @@
-import 'package:flame/camera.dart';
+import 'package:flame/components.dart';
 import 'package:nexus_survivor/game/character/dev_character.dart';
 import 'package:nexus_survivor/game/controller/action_joystick.dart';
 import 'package:nexus_survivor/game/controller/movement_joystick.dart';
 import 'package:nexus_survivor/game/controller/player_controller.dart';
+import 'package:nexus_survivor/game/nexus/dev_nexus.dart';
 import 'package:nexus_survivor/game/nexus_survivor.dart';
 import 'package:nexus_survivor/game/weapon/dev_weapon.dart';
 import 'package:nexus_survivor/game/world/dev/dev_background.dart';
@@ -32,6 +33,9 @@ class DevNexusSurvivor extends NexusSurvivor {
   /// The development weapon (orange rectangle placeholder).
   late final DevWeapon devWeapon;
 
+  /// The nexus building placed at the centre of the world.
+  late final DevNexus nexus;
+
   /// The development level driving the wave state machine.
   late final DevLevel devLevel;
 
@@ -46,14 +50,19 @@ class DevNexusSurvivor extends NexusSurvivor {
     // Set up the camera to follow the player.
     camera = CameraComponent(world: gameWorld);
 
-    // Create the player character at the centre of the world.
-    player = DevCharacter();
+    // Create the player character to the right of the nexus.
+    player = DevCharacter(initialPosition: Vector2(80, 0));
 
     // Attach the dev weapon to the player.
     devWeapon = DevWeapon();
     player.weapon = devWeapon;
 
     await gameWorld.add(DevBackground());
+
+    // Place the nexus at the centre of the world.
+    nexus = DevNexus();
+    await gameWorld.add(nexus);
+
     await gameWorld.add(player);
 
     // Load and start the dev level.
