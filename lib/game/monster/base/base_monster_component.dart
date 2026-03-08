@@ -111,7 +111,6 @@ abstract class BaseMonsterComponent extends PositionComponent
       return;
     }
 
-
     _tickTimers(dt);
 
     if (_knockbackTimer <= 0) {
