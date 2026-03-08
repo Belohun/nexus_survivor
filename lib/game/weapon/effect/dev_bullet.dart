@@ -26,7 +26,7 @@ class DevBullet extends BaseWeaponEffect {
   double _distanceTravelled = 0;
 
   @override
-  bool get isFinished => _distanceTravelled >= maxDistance;
+  bool get isFinished => _distanceTravelled >= maxDistance || hasHit;
 
   //#region Lifecycle
 

@@ -1,21 +1,39 @@
+import 'dart:math';
+
+import 'package:flame/components.dart';
+import 'package:nexus_survivor/game/character/base/base_character_component.dart';
 import 'package:nexus_survivor/game/level/base_level.dart';
 import 'package:nexus_survivor/game/level/level_config.dart';
+import 'package:nexus_survivor/game/monster/dev_monster.dart';
+import 'package:nexus_survivor/game/nexus/base_nexus_component.dart';
 import 'package:nexus_survivor/game/world/wave_config.dart';
 
 /// [DevLevel] is a concrete [BaseLevel] used during development.
 ///
-/// It provides a simple multi-wave configuration with no real enemy
-/// spawning — [onSpawnEnemy] is a no-op so the wave timer ticks but
-/// no entities are created. This allows testing of the level state
-/// machine, nexus health, and the joystick/controller pipeline on a
-/// blank canvas.
+/// It spawns [DevMonster] instances at random positions on a circle
+/// surrounding the nexus. Each monster targets the nexus by default
+/// and switches to the player on aggro.
 class DevLevel extends BaseLevel {
   /// Creates a [DevLevel] with the given [config].
   ///
-  /// When [config] is omitted a default single-wave configuration is
-  /// used.
-  DevLevel({LevelConfig? config})
-    : super(config: config ?? _defaultDevConfig());
+  /// [nexus] and [player] are required so spawned monsters can
+  /// navigate toward them. When [config] is omitted a default
+  /// multi-wave configuration is used.
+  DevLevel({
+    LevelConfig? config,
+    this.nexus,
+    this.player,
+    this.spawnRadius = 500,
+  }) : super(config: config ?? _defaultDevConfig());
+
+  /// The nexus component monsters will target.
+  final BaseNexusComponent? nexus;
+
+  /// The player character — monsters switch aggro when nearby.
+  final BaseCharacterComponent? player;
+
+  /// Radius of the spawn circle centred on the nexus.
+  final double spawnRadius;
 
   /// Number of times [onSpawnEnemy] was invoked (for debug display).
   int spawnCount = 0;
@@ -26,14 +44,35 @@ class DevLevel extends BaseLevel {
   /// Number of times the level failed.
   int failedCount = 0;
 
+  final Random _rng = Random();
+
   //#region BaseLevel hooks
 
   @override
   void onSpawnEnemy(int waveNumber) {
     spawnCount++;
-    // No-op: real enemy spawning is not yet implemented.
-    // Immediately mark the enemy as defeated so the wave can progress.
-    onEnemyDefeated();
+
+    if (nexus == null) {
+      // Fallback: no nexus reference — immediately mark defeated so
+      // the wave state machine can progress.
+      onEnemyDefeated();
+      return;
+    }
+
+    final angle = _rng.nextDouble() * 2 * pi;
+    final spawnPos =
+        nexus!.center +
+        Vector2(cos(angle) * spawnRadius, sin(angle) * spawnRadius);
+
+    final monster = DevMonster(
+      nexus: nexus!,
+      spawnPosition: spawnPos,
+      player: player,
+      deathCallback: onEnemyDefeated,
+    );
+
+    // Add the monster to the same parent as the level (the GameWorld).
+    parent?.add(monster);
   }
 
   @override

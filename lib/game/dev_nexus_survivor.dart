@@ -5,6 +5,7 @@ import 'package:nexus_survivor/game/controller/movement_joystick.dart';
 import 'package:nexus_survivor/game/controller/player_controller.dart';
 import 'package:nexus_survivor/game/nexus/dev_nexus.dart';
 import 'package:nexus_survivor/game/nexus_survivor.dart';
+import 'package:nexus_survivor/game/ui/dev_spawn_button.dart';
 import 'package:nexus_survivor/game/weapon/dev_weapon.dart';
 import 'package:nexus_survivor/game/world/dev/dev_background.dart';
 import 'package:nexus_survivor/game/level/level.dart';
@@ -65,8 +66,8 @@ class DevNexusSurvivor extends NexusSurvivor {
 
     await gameWorld.add(player);
 
-    // Load and start the dev level.
-    devLevel = DevLevel();
+    // Load and start the dev level (with nexus & player references).
+    devLevel = DevLevel(nexus: nexus, player: player);
     await gameWorld.loadLevel(devLevel);
     devLevel.startLevel();
 
@@ -77,6 +78,14 @@ class DevNexusSurvivor extends NexusSurvivor {
     // Create the action joystick (HUD — bottom-right corner).
     actionJoystick = ActionJoystick();
     await camera.viewport.add(actionJoystick);
+
+    // Add a debug spawn button to the HUD.
+    final spawnButton = DevSpawnButton(
+      nexus: nexus,
+      player: player,
+      gameWorld: gameWorld,
+    );
+    await camera.viewport.add(spawnButton);
 
     // Create the player controller with both joysticks.
     final controller = PlayerController(
