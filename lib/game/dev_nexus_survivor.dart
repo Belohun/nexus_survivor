@@ -6,6 +6,7 @@ import 'package:nexus_survivor/game/controller/player_controller.dart';
 import 'package:nexus_survivor/game/nexus/dev_nexus.dart';
 import 'package:nexus_survivor/game/nexus_survivor.dart';
 import 'package:nexus_survivor/game/ui/dev_spawn_button.dart';
+import 'package:nexus_survivor/game/ui/pause/pause_button.dart';
 import 'package:nexus_survivor/game/weapon/dev_weapon.dart';
 import 'package:nexus_survivor/game/world/dev/dev_background.dart';
 import 'package:nexus_survivor/game/level/level.dart';
@@ -86,6 +87,9 @@ class DevNexusSurvivor extends NexusSurvivor {
       gameWorld: gameWorld,
     );
     await camera.viewport.add(spawnButton);
+
+    // Add the pause button to the HUD.
+    await camera.viewport.add(PauseButton());
 
     // Create the player controller with both joysticks.
     final controller = PlayerController(
