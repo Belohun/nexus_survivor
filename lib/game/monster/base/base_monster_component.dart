@@ -7,7 +7,7 @@ import 'package:nexus_survivor/game/monster/base/monster_stats.dart';
 import 'package:nexus_survivor/game/monster/base/monster_target_mode.dart';
 import 'package:nexus_survivor/game/nexus/base_nexus_component.dart';
 import 'package:nexus_survivor/game/nexus_survivor.dart';
-import 'package:nexus_survivor/game/ui/damage_number.dart';
+import 'package:nexus_survivor/ui/damage_number.dart';
 
 /// [BaseMonsterComponent] is the abstract foundation for every enemy
 /// that can be spawned in waves.
