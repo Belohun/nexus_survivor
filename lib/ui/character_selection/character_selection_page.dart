@@ -87,17 +87,6 @@ class CharacterSelectionPage extends StatelessWidget {
       ),
     );
   }
-
-  void _navigateToGame(BuildContext context, CharacterType characterType) {
-    Navigator.of(context).push(
-      PageRouteBuilder<void>(
-        pageBuilder: (_, animation, _) =>
-            GamePage(characterType: characterType),
-        transitionsBuilder: (_, animation, _, child) =>
-            FadeTransition(opacity: animation, child: child),
-      ),
-    );
-  }
 }
 
 /// A translucent card that displays the name, colour swatch, and description
@@ -155,40 +144,6 @@ class _CharacterDetailPanel extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-/// A large primary action button labelled "Play".
-class _PlayButton extends StatelessWidget {
-  const _PlayButton({required this.onPressed});
-
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onPressed,
-      child: Container(
-        width: 220,
-        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
-        decoration: BoxDecoration(
-          color: const Color(0xFF0F3460),
-          border: Border.all(color: const Color(0xFF4FC3F7), width: 2),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: const Center(
-          child: Text(
-            'Play',
-            style: TextStyle(
-              color: Color(0xFF4FC3F7),
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              decoration: TextDecoration.none,
-            ),
-          ),
-        ),
       ),
     );
   }
