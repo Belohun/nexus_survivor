@@ -23,10 +23,7 @@ class ObjectBoxCharacterRepository implements CharacterRepository {
     final box = _store.selectedCharacterBox;
     final existing = box.get(1);
     box.put(
-      SelectedCharacterEntity(
-        id: existing?.id ?? 0,
-        characterName: type.name,
-      ),
+      SelectedCharacterEntity(id: existing?.id ?? 0, characterName: type.name),
     );
   }
 
@@ -47,4 +44,3 @@ class ObjectBoxCharacterRepository implements CharacterRepository {
     return null;
   }
 }
-
