@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:nexus_survivor/game/nexus_survivor.dart';
-import 'package:nexus_survivor/game/ui/pause/pause_overlay.dart';
+import 'package:nexus_survivor/ui/pause/pause_overlay.dart';
 
 /// [PauseButton] is a HUD component that pauses the game when tapped.
 ///

@@ -2,7 +2,7 @@ import 'package:flame/components.dart';
 import 'package:flame_test/flame_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nexus_survivor/game/nexus_survivor.dart';
-import 'package:nexus_survivor/game/ui/damage_number.dart';
+import 'package:nexus_survivor/ui/damage_number.dart';
 
 void main() {
   group('DamageNumber', () {
