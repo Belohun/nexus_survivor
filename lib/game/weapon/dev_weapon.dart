@@ -12,8 +12,9 @@ import 'package:nexus_survivor/game/weapon/effect/dev_bullet.dart';
 /// is called. Attach it to a [DevCharacter] to visualise the aim
 /// direction on screen.
 class DevWeapon extends BaseWeapon {
-  /// Creates a [DevWeapon] with an optional custom [orbitRadius].
-  DevWeapon({super.orbitRadius = 24});
+  /// Creates a [DevWeapon] with an optional custom [orbitRadius] and
+  /// [baseCooldown].
+  DevWeapon({super.orbitRadius = 24, super.baseCooldown = 0.3});
 
   //#region BaseWeapon contract
 

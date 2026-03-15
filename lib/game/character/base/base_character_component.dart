@@ -42,7 +42,6 @@ abstract class BaseCharacterComponent extends SpriteAnimationComponent
   //#region Private fields
 
   double _invincibilityTimer = 0;
-  double _attackCooldownTimer = 0;
   double _dashTimer = 0;
   double _dashCooldownTimer = 0;
   double _knockbackTimer = 0;
@@ -302,14 +301,16 @@ abstract class BaseCharacterComponent extends SpriteAnimationComponent
 
   /// Triggers a basic attack toward the [target] world position.
   ///
-  /// Returns `true` when the attack was initiated (i.e. cooldown was
-  /// ready). Override [onAttack] for projectile spawning, melee hit
-  /// detection, or other custom behaviour.
+  /// Returns `true` when the attack was initiated (i.e. the weapon's
+  /// cooldown was ready and the character is not locked). The cooldown
+  /// is managed by the equipped [BaseWeapon]. Override [onAttack] for
+  /// projectile spawning, melee hit detection, or other custom
+  /// behaviour.
   bool attack(Vector2 target) {
     if (isLocked) return false;
-    if (_attackCooldownTimer > 0) return false;
+    if (_weapon == null || !_weapon!.canFire) return false;
 
-    _attackCooldownTimer = stats.attackCooldown;
+    _weapon!.tryFire();
     _tryTransition(CharacterState.attacking);
     onAttack(target);
     return true;
@@ -506,7 +507,10 @@ abstract class BaseCharacterComponent extends SpriteAnimationComponent
   bool get isDashing => _dashTimer > 0;
 
   /// Returns `true` when the character can initiate an attack.
-  bool get canAttack => _attackCooldownTimer <= 0 && !isLocked;
+  ///
+  /// Requires an equipped weapon whose cooldown has expired and the
+  /// character must not be locked.
+  bool get canAttack => _weapon != null && _weapon!.canFire && !isLocked;
 
   /// Returns `true` when the character can initiate a dash.
   bool get canDash => _dashCooldownTimer <= 0 && _dashTimer <= 0 && !isLocked;
@@ -541,13 +545,6 @@ abstract class BaseCharacterComponent extends SpriteAnimationComponent
       // Flashing effect during invincibility.
       opacity = (_invincibilityTimer * 10).toInt().isEven ? 1.0 : 0.4;
       if (_invincibilityTimer == 0) opacity = 1.0;
-    }
-
-    if (_attackCooldownTimer > 0) {
-      _attackCooldownTimer = (_attackCooldownTimer - dt).clamp(
-        0,
-        double.infinity,
-      );
     }
 
     if (_dashTimer > 0) {

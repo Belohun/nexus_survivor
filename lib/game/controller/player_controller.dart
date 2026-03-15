@@ -206,7 +206,6 @@ class PlayerController extends Component
 
     if (actionJoystick!.isDragged) {
       _performAttack();
-      character.weapon?.onFire();
     }
   }
 

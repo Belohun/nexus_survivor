@@ -9,8 +9,17 @@ import 'package:nexus_survivor/game/controller/player_controller.dart';
 import 'package:nexus_survivor/game/nexus_survivor.dart';
 import 'package:nexus_survivor/game/skill/base_skill.dart';
 import 'package:nexus_survivor/game/skill/skill_manager.dart';
+import 'package:nexus_survivor/game/weapon/base_weapon.dart';
 
 import '../../helpers/test_character.dart';
+
+/// A minimal concrete [BaseWeapon] used in controller tests.
+class _TestWeapon extends BaseWeapon {
+  _TestWeapon() : super(baseCooldown: 0.3);
+
+  @override
+  void onFire() {}
+}
 
 /// Concrete test skill that records invocations.
 class _TestSkill extends BaseSkill {
@@ -80,6 +89,13 @@ void main() {
       final character = TestCharacter(testStats: stats ?? defaultTestStats());
       await character.init();
       await game.ensureAdd(character);
+
+      // Equip a weapon so attack-related tests succeed (cooldown now
+      // lives on the weapon, not on CharacterStats).
+      final weapon = _TestWeapon();
+      character.weapon = weapon;
+      game.update(0);
+      await game.ready();
 
       SkillManager? manager;
       if (withSkillManager) {
