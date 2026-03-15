@@ -19,13 +19,7 @@ class DevSwordCharacter extends BaseCharacterComponent {
   DevSwordCharacter({Vector2? initialPosition, CharacterStats? devStats})
     : _devStats =
           devStats ??
-          CharacterStats(
-            maxHp: 150,
-            speed: 160,
-            damage: 20,
-            defense: 5,
-            attackCooldown: 0.4,
-          ),
+          CharacterStats(maxHp: 150, speed: 160, damage: 20, defense: 5),
       _initialPosition = initialPosition ?? Vector2.zero();
 
   final CharacterStats _devStats;

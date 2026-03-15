@@ -12,7 +12,6 @@ class CharacterStats {
     required this.speed,
     required this.damage,
     this.defense = 0,
-    this.attackCooldown = 0.3,
     this.invincibilityDuration = 0.5,
     this.dashSpeedMultiplier = 2.5,
     this.dashDuration = 0.2,
@@ -41,9 +40,6 @@ class CharacterStats {
   ///
   /// Incoming damage is reduced by this value before being applied.
   double defense;
-
-  /// Minimum seconds between two consecutive attacks.
-  double attackCooldown;
 
   /// Duration (seconds) the character is invincible after taking a hit.
   double invincibilityDuration;
@@ -85,7 +81,6 @@ class CharacterStats {
     double? speed,
     double? damage,
     double? defense,
-    double? attackCooldown,
     double? invincibilityDuration,
     double? dashSpeedMultiplier,
     double? dashDuration,
@@ -103,7 +98,6 @@ class CharacterStats {
       speed: speed ?? this.speed,
       damage: damage ?? this.damage,
       defense: defense ?? this.defense,
-      attackCooldown: attackCooldown ?? this.attackCooldown,
       invincibilityDuration:
           invincibilityDuration ?? this.invincibilityDuration,
       dashSpeedMultiplier: dashSpeedMultiplier ?? this.dashSpeedMultiplier,

@@ -4,10 +4,23 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nexus_survivor/game/character/base/character_state.dart';
 import 'package:nexus_survivor/game/character/base/character_stats.dart';
 import 'package:nexus_survivor/game/nexus_survivor.dart';
+import 'package:nexus_survivor/game/weapon/base_weapon.dart';
 
 import '../../helpers/game_helpers.dart';
 import '../../helpers/test_character.dart';
 import '../../helpers/test_nexus.dart';
+
+/// A minimal concrete [BaseWeapon] for attack-cooldown tests.
+class _TestWeapon extends BaseWeapon {
+  _TestWeapon({super.baseCooldown});
+
+  int fireCount = 0;
+
+  @override
+  void onFire() {
+    fireCount++;
+  }
+}
 
 void main() {
   group('BaseCharacterComponent', () {
@@ -118,6 +131,11 @@ void main() {
     test('attack transitions to attacking and calls onAttack', () async {
       await withMountedCharacter(
         testBody: (game, character) async {
+          final weapon = _TestWeapon();
+          character.weapon = weapon;
+          game.update(0);
+          await game.ready();
+
           final result = character.attack(Vector2(100, 0));
 
           expect(result, isTrue);
@@ -130,8 +148,12 @@ void main() {
 
     test('attack respects cooldown', () async {
       await withMountedCharacter(
-        stats: defaultTestStats(attackCooldown: 1.0),
         testBody: (game, character) async {
+          final weapon = _TestWeapon(baseCooldown: 1.0);
+          character.weapon = weapon;
+          game.update(0);
+          await game.ready();
+
           character.attack(Vector2(1, 0));
           expect(character.canAttack, isFalse);
 
@@ -144,8 +166,12 @@ void main() {
 
     test('attack becomes available after cooldown expires', () async {
       await withMountedCharacter(
-        stats: defaultTestStats(attackCooldown: 0.5),
         testBody: (game, character) async {
+          final weapon = _TestWeapon(baseCooldown: 0.5);
+          character.weapon = weapon;
+          game.update(0);
+          await game.ready();
+
           character.attack(Vector2(1, 0));
           expect(character.canAttack, isFalse);
 
@@ -160,6 +186,11 @@ void main() {
     test('attack fails when character is locked', () async {
       await withMountedCharacter(
         testBody: (game, character) async {
+          final weapon = _TestWeapon();
+          character.weapon = weapon;
+          game.update(0);
+          await game.ready();
+
           character.stun(5.0);
 
           final result = character.attack(Vector2(1, 0));
@@ -561,8 +592,12 @@ void main() {
 
     test('canAttack reflects cooldown and lock state', () async {
       await withMountedCharacter(
-        stats: defaultTestStats(attackCooldown: 1.0),
         testBody: (game, character) async {
+          final weapon = _TestWeapon(baseCooldown: 1.0);
+          character.weapon = weapon;
+          game.update(0);
+          await game.ready();
+
           expect(character.canAttack, isTrue);
 
           character.attack(Vector2(1, 0));
