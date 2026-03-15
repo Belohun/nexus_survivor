@@ -125,32 +125,36 @@ void main() {
 
     test('tryFire fires and starts cooldown', () async {
       final game = await initializeGame(NexusSurvivor.new);
-      final weapon = _TestWeapon(baseCooldown: 1.0);
-      await game.ensureAdd(weapon);
+      try {
+        final weapon = _TestWeapon(baseCooldown: 1.0);
+        await game.ensureAdd(weapon);
 
-      expect(weapon.canFire, isTrue);
+        expect(weapon.canFire, isTrue);
 
-      final result = weapon.tryFire();
+        final result = weapon.tryFire();
 
-      expect(result, isTrue);
-      expect(weapon.fireCount, 1);
-      expect(weapon.canFire, isFalse);
-
-      game.onRemove();
+        expect(result, isTrue);
+        expect(weapon.fireCount, 1);
+        expect(weapon.canFire, isFalse);
+      } finally {
+        game.onRemove();
+      }
     });
 
     test('tryFire is blocked while on cooldown', () async {
       final game = await initializeGame(NexusSurvivor.new);
-      final weapon = _TestWeapon(baseCooldown: 1.0);
-      await game.ensureAdd(weapon);
+      try {
+        final weapon = _TestWeapon(baseCooldown: 1.0);
+        await game.ensureAdd(weapon);
 
-      weapon.tryFire();
-      final second = weapon.tryFire();
+        weapon.tryFire();
+        final second = weapon.tryFire();
 
-      expect(second, isFalse);
-      expect(weapon.fireCount, 1);
-
-      game.onRemove();
+        expect(second, isFalse);
+        expect(weapon.fireCount, 1);
+      } finally {
+        game.onRemove();
+      }
     });
 
     test('cooldown expires after baseCooldown duration', () async {
