@@ -10,7 +10,7 @@ import 'package:nexus_survivor/game/weapon/effect/dev_sword_swing_effect.dart';
 /// [DevSwordSwingEffect] arc when [onFire] is called. Attach it to a
 /// melee-oriented character to visualise sword swings on screen.
 class DevSwordWeapon extends BaseWeapon {
-  /// Creates a [DevSwordWeapon] with an optional custom [orbitRadius].
+  /// Creates a [DevSwordWeapon] with optional custom [orbitRadius] and [baseCooldown].
   DevSwordWeapon({super.orbitRadius = 20, super.baseCooldown = 1.0});
 
   //#region BaseWeapon contract
