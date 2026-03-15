@@ -262,22 +262,24 @@ void main() {
 
     test('modifier affects tryFire cooldown duration', () async {
       final game = await initializeGame(NexusSurvivor.new);
-      final weapon = _TestWeapon(baseCooldown: 1.0);
-      await game.ensureAdd(weapon);
+      try {
+        final weapon = _TestWeapon(baseCooldown: 1.0);
+        await game.ensureAdd(weapon);
 
-      // Add a 50 % reduction modifier.
-      weapon.addCooldownModifier(
-        const CooldownModifier(id: 'rapid', multiplier: 0.5),
-      );
+        // Add a 50 % reduction modifier.
+        weapon.addCooldownModifier(
+          const CooldownModifier(id: 'rapid', multiplier: 0.5),
+        );
 
-      weapon.tryFire();
-      expect(weapon.canFire, isFalse);
+        weapon.tryFire();
+        expect(weapon.canFire, isFalse);
 
-      // After 0.6 s the effective 0.5 s cooldown should have expired.
-      game.update(0.6);
-      expect(weapon.canFire, isTrue);
-
-      game.onRemove();
+        // After 0.6 s the effective 0.5 s cooldown should have expired.
+        game.update(0.6);
+        expect(weapon.canFire, isTrue);
+      } finally {
+        game.onRemove();
+      }
     });
 
     //#endregion
